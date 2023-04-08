@@ -197,7 +197,7 @@
           }
         }, [hideCard, showFront])
 
-        const path = `../assets/${src}.svg`
+        const path = `./assets/${src}.svg`
 
         return (
           <div className = "card">
@@ -216,7 +216,7 @@
                   clickCard(id)
                 }}>
                 <div className = "card-back">
-                  <img className = "back-img" src = "../assets/card_back.svg"/>
+                  <img className = "back-img" src = "./assets/card_back.svg"/>
                 </div>
                 <div className = "card-front">
                   <img className = "front-img" src = {path}/>
