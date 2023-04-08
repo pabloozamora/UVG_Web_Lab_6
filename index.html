@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="stylesheet" href="./App.css" />
+    <link rel="stylesheet" href="./Board.css" />
+    <link rel="stylesheet" href="./img.css" />
+    <link rel="stylesheet" href="./Card.css" />
+    <link rel="stylesheet" href="./FlipTransition.css" />
+    <link rel="stylesheet" href="./WinAlert.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lab 6</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/react-transition-group/dist/react-transition-group.js"></script>
+  </head>
+  <body>
+
+    <div id="root"></div>
+    <script type="text/babel">
+
+      const App = () => {
+
+        const [ score, setScore ] = React.useState(0)
+        const [ moves, setMoves ] = React.useState(0)
+        const [ visibility, setVisibility ] = React.useState(false)
+
+        const updateScore = () => {
+          setScore((oldScore) => oldScore + 1)
+        }
+
+        const updateMoves = () => {
+          setMoves((oldMoves) => oldMoves + 1)
+        }
+
+        React.useEffect(() => {
+          if (score === 8){
+            setVisibility(() => true)
+          }
+        }, [score])
+
+        return (
+          <div className = "App">
+            <h2>{`Parejas completadas: ${score}`}</h2>
+            <h3>{`Movimientos realizados: ${moves}`}</h3>
+            <Board updateScore = {updateScore} updateMoves = {updateMoves}/>
+            <WinAlert visible = {visibility} moves = {moves}/>
+          </div>
+          )
+      }
+
+      const WinAlert = ( props ) => {
+
+        console.log(props.visible)
+
+        return(
+          <div className = {props.visible ? 'show' : 'hide'}> 
+            <h1>¡Has ganado! </h1>
+            <p>Has realizado {props.moves} movimientos </p>
+          </div>
+        )
+      }
+
+      const Board = ({ updateScore, updateMoves }) => {
+        const [ pairs, setPairs] = React.useState([])
+        const [ completedPairs, addCompletedPair ] = React.useState([])
+        const [ clickedCard, setClickedCard ] = React.useState(0)
+        const [ previousCard, setPreviousCard ] = React.useState(0)
+        //const [ hideCard, setHideCard ] = React.useState(false)
+
+        React.useEffect(() => {
+          generateUniqueRandom()
+        }, [])
+
+        React.useEffect(() => {
+          if (previousCard > 0 && pairs[previousCard-1].src === pairs[clickedCard-1].src) {
+            completePair(clickedCard, previousCard);
+            setPreviousCard(() => 0);
+            setClickedCard(() => -2);
+          } else if (previousCard > 0) {
+            setPairs((oldPairs) => {
+              const newPairs = [...oldPairs];
+              newPairs[clickedCard-1].hidden = newPairs[clickedCard-1].hidden + 1;
+              newPairs[previousCard-1].hidden = newPairs[previousCard-1].hidden + 1;
+              setPreviousCard(() => 0);
+              setClickedCard(() => -2);
+              return newPairs;
+            });
+          }
+        }, [clickedCard, previousCard]);
+
+        const createCard = (src) => {
+          setPairs((oldPairs) => {
+            const newPairs = [...oldPairs, {id: oldPairs.length+1, src, completed: false, hidden: 0}]
+            return newPairs
+          })
+          
+        }
+
+        const shuffle = (array) => {
+          let currentIndex = array.length,  randomIndex;
+
+          while (currentIndex != 0) {
+        
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex--;
+        
+            [array[currentIndex], array[randomIndex]] = [
+              array[randomIndex], array[currentIndex]];
+          }
+        
+          return array;
+        }
+
+        const generateUniqueRandom = () => {
+          //Generar número aleatorio
+          let numberArray = []
+          while (numberArray.length < 16){
+            let random = (Math.random() * 15).toFixed();
+            random = Number(random) + 1;
+            if (!numberArray.includes(random)) {
+              numberArray.push(random, random)
+            }
+          }
+          numberArray = shuffle(numberArray)
+          numberArray.forEach((number) => createCard(number))
+        }
+        
+        console.log(pairs)
+
+        const clickCard = (id) => {
+          console.log(`Tarjeta clickeada: ${id}`)
+          updateMoves()
+
+          if (clickedCard === 0){
+            setClickedCard(() => id)
+          }
+          else {
+            setPreviousCard(() => clickedCard);
+            setClickedCard(() => id);
+          }
+        }
+
+        const completePair = (clickedCard, previousCard) => {
+          addCompletedPair(
+            (oldCompletedPairs) => {
+              const newPairs = [...oldCompletedPairs, pairs[clickedCard-1].src]
+              console.log(newPairs)
+              return newPairs
+            }
+          )
+
+          if (!completedPairs.includes(pairs[clickedCard-1].src)){
+            updateScore()
+          }
+
+          setPairs(
+            (oldPairs) => {
+              const newPairs = [...oldPairs]
+              console.log(newPairs)
+
+              newPairs[previousCard-1].completed = true
+              newPairs[clickedCard-1].completed = true
+              return newPairs
+            }
+          )
+        }
+
+        return (
+          <div className = "board">
+          {pairs.map((pair, index) => <Card id = {pair.id} src = {pair.src} clickCard = {clickCard} completed = {pair.completed} hidden = {pair.hidden}/>)}
+          </div>
+        )
+      }
+
+      const Card = ({ id, src, clickCard, completed, hidden }) => {
+        const [ showFront, setShowFront ] = React.useState(true)
+        const [ hideCard, setHideCard ] = React.useState(0)
+
+        console.log(`carta ${id}, escondida: ${hideCard}`)
+
+        React.useEffect(() => {
+          setHideCard(hidden);
+          console.log("renderizando carta: ", id)
+        }, [hidden]);
+
+        React.useEffect(() => {
+          if (hideCard > 0 && showFront === false){
+            console.log(`hideCard ahora es ${hideCard} y showFront ahora es ${showFront}`)
+            setTimeout(() => {
+              setShowFront(()=>true)
+              setHideCard(() => 0)
+            }, 800)
+            
+          }
+        }, [hideCard, showFront])
+
+        const path = `../assets/${src}.svg`
+
+        return (
+          <div className = "card">
+            <ReactTransitionGroup.CSSTransition
+              in = {showFront}
+              timeout = {300}
+              classNames = 'flip'
+            >
+              <div className = "card-inner" onClick={() => {
+                  setShowFront((flipped) => {
+                    console.log(showFront)
+                    if (!completed){
+                      return !flipped
+                    }
+                  })
+                  clickCard(id)
+                }}>
+                <div className = "card-back">
+                  <img className = "back-img" src = "../assets/card_back.svg"/>
+                </div>
+                <div className = "card-front">
+                  <img className = "front-img" src = {path}/>
+                </div>
+              </div>
+            </ReactTransitionGroup.CSSTransition>
+          </div>
+        )
+      }
+
+      const root = ReactDOM.createRoot(document.getElementById('root'))
+      root.render(<App tab = "home"/>)
+    </script>
+  </body>
+</html>

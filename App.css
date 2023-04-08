@@ -1,0 +1,10 @@
+.App {
+    display: flex;
+    position: relative;
+    flex-direction: column;
+    align-self: center;
+    justify-content: center;
+    align-items: center;
+    font-family: Montserrat;
+    background-color: rgb(217, 232, 245);
+}

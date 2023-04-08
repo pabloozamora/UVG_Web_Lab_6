@@ -1,0 +1,30 @@
+.show, .hide {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 4vh;
+    width: fit-content;
+    height: fit-content;
+    border: 3px solid black;
+    background-color: rgb(255, 255, 255);
+    border-radius: 7px;
+    color:rgb(37, 33, 33);
+    padding: 30px;
+    transition: opacity 1s;
+}
+
+.hide {
+    visibility: hidden;
+    opacity: 0;
+}
+
+.show {
+    visibility: visible;
+    opacity: 1;
+}
+
+h1 {
+    margin-bottom: 0;
+}
